@@ -55,6 +55,18 @@ keygen bytes = fmap Scalar $
     --                  const byte *info DEFNULL, size_t info_len DEFNULL);
     {# call blst_keygen #} ptr bytes' (fromIntegral $ length bytes) nullPtr 0
 
+deriveMasterEIP2333 :: ByteArrayAccess ba => ba -> IO Scalar
+deriveMasterEIP2333 bytes = fmap Scalar $
+  AS.create $ \ptr ->
+  withByteArray bytes $ \bytes' ->
+    {# call blst_derive_master_eip2333 #} ptr bytes' (fromIntegral $ length bytes)
+
+deriveChildEIP2333 :: Scalar -> C2HSImp.CUInt -> IO Scalar
+deriveChildEIP2333 (Scalar s) i = fmap Scalar $
+  AS.create $ \ptr ->
+  withByteArray s $ \s' ->
+  {# call blst_derive_child_eip2333 #} ptr s' i
+
 -- | Convert scalar to a point in G1.
 skToPkInG1 :: Scalar -> IO (Point 'P1)
 skToPkInG1 (Scalar sk) = fmap Point $

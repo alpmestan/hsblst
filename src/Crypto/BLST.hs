@@ -7,6 +7,8 @@
 module Crypto.BLST
   ( -- * Main functions
     keygen
+  , deriveMasterEIP2333
+  , deriveChildEIP2333
   , skToPk
   , sign
   , verify
@@ -63,11 +65,18 @@ import Crypto.BLST.Internal.Bindings qualified as B
 import Crypto.BLST.Internal.Classy
 import Crypto.BLST.Internal.Demote
 import Crypto.BLST.Internal.Types
+import Foreign.C.Types (CUInt)
 
 -- | Generate a secret key from bytes.
 keygen :: (ByteArrayAccess ba, 32 <= n, KnownNat n) => SizedByteArray n ba -> SecretKey
 keygen = SecretKey . unsafePerformIO . B.keygen . unSizedByteArray
 {-# NOINLINE keygen #-}
+
+deriveMasterEIP2333 :: (ByteArrayAccess ba, 32 <= n, KnownNat n) => SizedByteArray n ba -> SecretKey
+deriveMasterEIP2333 = SecretKey . unsafePerformIO . B.deriveMasterEIP2333
+
+deriveChildEIP2333 :: SecretKey -> CUInt -> SecretKey
+deriveChildEIP2333 (SecretKey s) = SecretKey . unsafePerformIO . B.deriveChildEIP2333 s
 
 -- | Convert a secret key to the corresponding public key on a given curve.
 skToPk :: forall c. IsCurve c => SecretKey -> PublicKey c
